@@ -9,14 +9,21 @@ function ModalEdit({ setEdit, selectedUser, setData }) {
   const [loading, setLoading] = useState(false);
 
   function submitUser(updatedUser) {
+    const updatedData = {
+      ...updatedUser,
+      input_date: new Date().toISOString(), // Update input_date ke waktu sekarang
+    };
     setLoading(true);
+
+    const newData = new URLSearchParams(updatedData)
+    const update = newData.toString()
 
     fetch(`https://67b6f7232bddacfb270d092e.mockapi.io/users/${selectedUser.id}`, {
       method: "PUT",
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": "application/x-www-form-urlencoded",
       },
-      body: JSON.stringify(updatedUser),
+      body: update,
     })
       .then((res) => res.json())
       .then((response) => {

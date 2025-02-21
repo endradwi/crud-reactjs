@@ -2,33 +2,58 @@ import React, { useEffect, useState } from "react";
 import ModalAdd from "../components/ModalAdd";
 import ModalView from "../components/ModalView";
 import ModalEdit from "../components/ModalEdit";
+import Button from "../components/Button";
 
 function App() {
-  const [getdata, setData] = useState([]);
-  const [getShow, setShow] = useState(false);
-  const [getView, setView] = useState(false);
-  const [getEdit, setEdit] = useState(false);
-  const [selectedUser, setSelectedUser] = useState(null);
+  const [getdata, setData] = useState([])
+  const [getShow, setShow] = useState(false)
+  const [getView, setView] = useState(false)
+  const [getEdit, setEdit] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [selectedUser, setSelectedUser] = useState(null)
+  const [loadingDelete, setLoadingDelete] = useState(null)
+
 
   useEffect(() => {
+    setLoading(true)
+    setTimeout(() => {
     fetch("https://67b6f7232bddacfb270d092e.mockapi.io/users")
-      .then((res) => res.json())
-      .then((response) => {
-        setData(response);
-      })
-      .catch((err) => console.error("Error fetching data:", err));
-  }, []);
+    .then((res) => res.json())
+    .then((response) => {
+      setData(response)
+      setLoading(false)
+    })
+    .catch((err) => console.error("Error fetching data:", err))
+    setLoading(false)
+    }, 5000)
+  }, [])
 
-  function handleDelete(id) {
+  const handleView = (user, index) => {
+    setSelectedUser({ ...user, tableIndex: index + 1 }) 
+    setView(true)
+  }
+  
+
+  const handleEdit = (user) => {
+    setSelectedUser(user)
+    setEdit(true)
+  }
+
+  const handleDelete = (id) => {
     if (window.confirm("Apakah Anda yakin ingin menghapus user ini?")) {
+      setLoadingDelete(id)
+  
       fetch(`https://67b6f7232bddacfb270d092e.mockapi.io/users/${id}`, {
         method: "DELETE",
       })
         .then((res) => res.json())
         .then(() => {
-          setData((prevData) => prevData.filter((user) => user.id !== id));
+          setData((prevData) => prevData.filter((user) => user.id !== id))
         })
-        .catch((err) => console.error("Error deleting user:", err));
+        .catch((err) => console.error("Error deleting user:", err))
+        .finally(() => {
+          setLoadingDelete(null)
+        })
     }
   }
 
@@ -39,13 +64,13 @@ function App() {
       {getEdit && <ModalEdit setEdit={setEdit} selectedUser={selectedUser} setData={setData} />}
 
       <main className="w-full h-screen flex flex-col gap-3 justify-center items-center">
-        <span
+        <button
           className="border bg-slate-400 hover:bg-slate-900 hover:text-white cursor-pointer py-1 px-3 rounded-lg"
-          onClick={() => setShow(!getShow)} 
+          onClick={() => setShow(!getShow)}
         >
           Tambah User
-        </span>
-
+        </button>
+        {loading ? (<p>Loading data...</p>):
         <table className="table-auto border space-y-52">
           <thead className="border-2">
             <tr>
@@ -67,39 +92,21 @@ function App() {
                 <td className="border p-2">{val.gender === "female" ? "Wanita" : "Pria"}</td>
                 <td className="border p-2">{new Date(val.date_of_birth).toLocaleDateString("id-ID")}</td>
                 <td className="border p-2">{new Date(val.input_date).toLocaleString("id-ID")}</td>
-                <td className="border p-2 space-x-1 text-center">
-                  <button
-                    className="text-blue-600 hover:underline"
-                    onClick={() => {
-                      setSelectedUser(val);
-                      setView(true);
-                    }}
-                  >
-                    [View]
-                  </button>
-                  <button
-                    className="text-yellow-600 hover:underline"
-                    onClick={() => {
-                      setSelectedUser(val);
-                      setEdit(true);
-                    }}
-                  >
-                    [Edit]
-                  </button>
-                  <button
-                    className="text-red-600 hover:underline"
-                    onClick={() => handleDelete(val.id)}
-                  >
-                    [Delete]
-                  </button>
+                <td className="gap-2 p-2 flex text-center">
+                <Button btn="view" onClick={() => handleView(val, index)} />
+                  <Button btn="edit" onClick={() => handleEdit(val)} />
+                  <Button btn="delete" onClick={() => handleDelete(val.id)} 
+                    isLoading={loadingDelete === val.id}
+                    />
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
+    }
       </main>
     </>
-  );
+  )
 }
 
 export default App;

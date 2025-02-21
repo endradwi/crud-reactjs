@@ -13,7 +13,7 @@ function ModalView({ setView, selectedUser }) {
 
         {selectedUser ? (
           <div className="flex flex-col gap-2 mt-3">
-            <div><strong>No:</strong> {selectedUser.id}</div>
+            <div><strong>No:</strong> {selectedUser.tableIndex}</div>
             <div><strong>Nama:</strong> {selectedUser.name}</div>
             <div><strong>Alamat:</strong> {selectedUser.address}</div>
             <div><strong>Jenis Kelamin:</strong> {selectedUser.gender === "female" ? "Wanita" : "Pria"}</div>
